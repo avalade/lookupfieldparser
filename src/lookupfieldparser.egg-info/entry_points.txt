@@ -1,0 +1,3 @@
+[console_scripts]
+lookupfieldparser = lookupfieldparser.console:main
+

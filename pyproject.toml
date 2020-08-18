@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "lookupfieldparser"
+version = "0.1.0"
+description = ""
+authors = ["Aaron D. Valade <aaron@benchling.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+parsley = "^1.3"
+click = "^7.1.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+lookupfieldparser = "lookupfieldparser.console:main"

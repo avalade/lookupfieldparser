@@ -1,0 +1,10 @@
+README.md
+setup.py
+src/lookupfieldparser/__init__.py
+src/lookupfieldparser/console.py
+src/lookupfieldparser.egg-info/PKG-INFO
+src/lookupfieldparser.egg-info/SOURCES.txt
+src/lookupfieldparser.egg-info/dependency_links.txt
+src/lookupfieldparser.egg-info/entry_points.txt
+src/lookupfieldparser.egg-info/requires.txt
+src/lookupfieldparser.egg-info/top_level.txt
