@@ -1,24 +1,18 @@
 import click
 
+from ometa.runtime import ParseError
 from parsley import makeGrammar
 
 from . import __version__
 
 cell_grammar = r"""
-ws = (' ' | '\r' | '\n' | '\t')*
-hexdigit = :x ?(x in '0123456789abcdefABCDEF') -> x
-escapedUnicode = 'u' <hexdigit{4}>:hs -> unichr(int(hs, 16))
-escapedChar = '\\' (('"' -> '"')    |('\\' -> '\\')
-                   |('/' -> '/')    |('b' -> '\b')
-                   |('f' -> '\f')   |('n' -> '\n')
-                   |('r' -> '\r')   |('t' -> '\t')
-                   |('\'' -> '\'')  | escapedUnicode)
 string = (singleQuotedString | doubleQuotedString)
-singleQuotedString = '\'' (escapedChar | ~'\'' anything)*:c '\'' -> ''.join(c)
-doubleQuotedString = '"' (escapedChar | ~'"' anything)*:c '"' -> ''.join(c)
+singleQuotedString = '\'' ( ~'\'' anything)*:c '\'' -> ''.join(c)
+doubleQuotedString = '"' ( ~'"' anything)*:c '"' -> ''.join(c)
 value = ws (string | lookupField)
 elements = (value:first (ws ',' value)*:rest -> [first] + rest) | -> []
-lookupField = '=LOOKUPFIELD(' elements:m ws ')' -> list(m)
+lookupField = 'LOOKUPFIELD(' elements:m ws ')' -> list(m)
+cellFormula = '=' lookupField
 """
 
 
@@ -26,5 +20,17 @@ lookupField = '=LOOKUPFIELD(' elements:m ws ')' -> list(m)
 @click.argument('text')
 @click.version_option(version=__version__)
 def main(text):
-    cells = makeGrammar(cell_grammar, {})
-    print(u"Found: {}".format(cells(text).lookupField()))
+    value_locations = []
+    def traceit(grammar_src, grammar_pos, input_pos):
+        if grammar_src in ["singleQuotedString", "doubleQuotedString"]:
+            value_locations.append(input_pos)
+
+    cells = makeGrammar(cell_grammar, {}, tracefunc=traceit)
+    try:
+        lookup_field_args = cells(text).cellFormula()
+        lookup_field_args_and_pos = zip(lookup_field_args, value_locations)
+        print("Found the following lookup field args at positions:")
+        for arg, pos in lookup_field_args_and_pos:
+            print("\t- {} {}".format(arg, pos))
+    except ParseError:
+        print("No LOOKUPFIELD found in input")
